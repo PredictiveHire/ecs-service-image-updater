@@ -11,7 +11,7 @@ if (!AWS.config.region) {
   });
 }
 
-var updater = function(options, cb) {
+var updater = function (options, cb) {
   async.waterfall([
     (next) => updater.currentTaskDefinition(options, next),
     (currentTaskDefinition, next) => {
@@ -76,7 +76,7 @@ Object.assign(updater, {
 
     var params = {
       cluster: options.clusterArn,
-      services: [ options.serviceName ]
+      services: [options.serviceName]
     };
 
     ecs.describeServices(params, (err, data) => {
@@ -105,7 +105,7 @@ Object.assign(updater, {
       status: 'ACTIVE'
     };
 
-    ecs.listTaskDefinitions(params, function(err, data) {
+    ecs.listTaskDefinitions(params, function (err, data) {
       if (err) return cb(err);
       if (data.taskDefinitionArns.length === 0) {
         return cb(new Error(`No Task Definitions found in family "${family}"`));
@@ -140,21 +140,24 @@ Object.assign(updater, {
       var containerIndex = _.findIndex(newTaskDefinition.containerDefinitions, (containerDefinition) => {
         return containerDefinition.name === containerName;
       });
-      
+
       newTaskDefinition.containerDefinitions[containerIndex].image = image;
     });
 
-    return _.pick(newTaskDefinition, [
+    newTaskDefinition = _.pick(newTaskDefinition, [
       'containerDefinitions',
       'family',
       'networkMode',
       'placementConstraints',
       'taskRoleArn',
+      'executionRoleArn',
       'volumes',
       'requiresCompatibilities',
       'cpu',
       'memory'
     ]);
+
+    return newTaskDefinition
   },
 
   /**
